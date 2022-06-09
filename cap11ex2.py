@@ -23,13 +23,13 @@ while True:
         print("file doesn't found")
         continue
 
-tmp = list()
+list_of_values = list()
 c = 0
 for each_line in handler:
     each_line.rstrip()
-    if len((re.findall('^New Revision: ([0-9]+)',each_line))) > 0:
-        tmp.append(int(((re.findall('^New Revision: ([0-9]+)',each_line))[0])))
-        #print(len(tmp),tmp[c])
-        c = c + 1
-#print(tmp)
-print(int(sum(tmp)/c))
+    list_of_1_match = re.findall('^New Revision: ([0-9]+)',each_line)
+    if len(list_of_1_match) != 1:
+        continue
+    list_of_values.append(int(list_of_1_match[0]))
+    c = c + 1
+print(int(sum(list_of_values)/c))
