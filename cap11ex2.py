@@ -27,20 +27,10 @@ while True:
 tmp = list()
 c = 0
 for each_line in handler:
-    tmp.append(re.findall('^New Revision: ([0-9]+)',each_line))
-    if len(tmp[-1]) == 0:
-        tmp.pop()
-    else:
-        c = c+1
-    #print(tmp)
-    #itmp = int(tmp[0])
-    #print(itmp)
-    #if itmp > 0:
-        #lonums.append(itmp)
-        #print(greped_line)
-        #lonums.append(int(greped_line))
-    #print(lonums)
-maxi = int(max(tmp)[0])
-print(maxi)
-
-print(maxi/c)
+    each_line.rstrip()
+    if len((re.findall('^New Revision: ([0-9]+)',each_line))) > 0:
+        tmp.append(int(((re.findall('^New Revision: ([0-9]+)',each_line))[0])))
+        #print(len(tmp),tmp[c])
+        c = c + 1
+#print(tmp)
+print(int(sum(tmp)/c))
