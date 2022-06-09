@@ -1,0 +1,586 @@
+#archivo de mi autoría usado para testear scripts de python
+COMANDOS BÁSICOS:
+-----------------------------
+--modos de la CLI (interfaz de linea de comandos)
+1. enable -> activa el modo de ejecución privilegiado [abreviación: en] {#} 
+2. configure terminal -> activa el modo de configuración global [abreviación: conf t] {(config)#} permite la entrada de comandos de configuración
+--submodos de configuración
+1. interface nombreinterfaz numerointerfaz -> permite configurar interfaces [abreviación: int] {(config-if)#} 
+1.1. también se puede configurar varias interfaces a la vez, ejemplo (en global config):
+	(config)# interface range g1/0/1 , g1/0/6 , gi1/0/8 , g1/0/11 
+	OR
+	(config)# interface range g1/0/1-11
+1.2 no shutdown -> levanta la interface  [abreviación: no shut]
+-----------------------------
+show-running-config -> muestra la cofniguración del dispositivo [abreviación: show run]
+COMANDOS PROPIO DE SWITCH (L2):
+switchport mode modo_del_puerto -> el modo puede ser access, dynamic o trunk. se corre en una interfaz o rango de interfaces. *
+*normalmente se definen los puertos de las terminales en modo acceso y los puertos que lo conectan con otros routers en modo troncal (trunk)
+switchport access <vlan> ->  en una interface o rango de interfaces, lo asigna a la vlan especificada
+switchport trunk native vlan numero_vlan -> setea la vlan nativa del enlace troncal
+en global config, para crear vlans (se tienen que definir igual en todos los switches):
+	1. vlan numero_vlan 
+	2. name nombre_vlan
+otra forma es (en el IOS CLI viejo):
+	1. vlan database
+	2. vlan numero_vlan nombre_vlan 
+show vlan -> ver vlans definidas en el global config de un switch
+show mac-address-table -> printea la MAC table que contiene mac - interface [abreviación: show mac-]
+nom vlan numero_vlan -> borra una vlan
+switchport trunk allowed vlan remove <vlan_n> -> elimina una vlan de la lista de vlans permitidas en el puerto de enlace troncal
+switchport trunk allowed vlan add <vlan_n> -> agrega una vlan a la la lista de vlans permitidas en el puerto de enlace troncal
+no switchport trunk allowed vlan -> agrega todas las vlans a la la lista de vlans permitidas en el puerto de enlace troncal
+------------------------------
+show arp -> printea la arp table que traduce ips con direcciones mac
+COMANDOS PROPIOS DEL ROUTER (L3):
+show ip route -> printea la routing table
+ip route numero_ip_de_red número_máscara número_ip_nexthop
+ip address númeroip númeromáscara -> setea el ip y la máscara de la interface que estemos configurando (se corre en el config-if)
+encapsulation nombreprotocolo -> setea el protocolo de encapsulación de capa 2, ej.: encapsulation hdlc (se corre en config-if)
+Abreviaciones de interfaces que usamos: serial : ser , FastEthernet : Fa
+Para resetear la configuracion de una interface:
+	default interface fa0/0
+con interface vlan numero_vlan creamos una interfaz virtual para una vlan
+con telnet ip_interfaz_virtual nos conectamos al switch para administrarlo
+---
+Para desde el switch admitir la configuracion remota con telnet:
+1. line vty 0 5
+2. password cisco
+3. exit
+4. enable secret cisco
+---
+---------COMANDOS FRAME-RELAY
+int ser numeroserial.numeroDLCI point-to-point {para levantar la interfaz}
+frame-relay interface-dlci numeroDLCI
+frame-relay map ip num_ip num_dlci broadcast cisco
+------------------------
+limpiar tabla de enrutamiento:
+clear ip route * (en enable)
+no router rip (en global config)
+--------
+para ver que protocolo de enrutamiento está activado:
+show ip protocols
+---------------PROTOCOLO DE ENRUTAMIENTO EIGRP--------
+(en global config) 
+1.  router eigrp ASN_NUMBER (el ASN es un número de identificación, no importa cual sea pero todos los routers que queremos enrutar tienen que 
+ser configurados con el mismo número)
+2. igual que en router rip, el protocolo asume las máscaras default, así que:
+network 10.0.0.0 (asume la máscara 255.0.0.0)
+network 192.168.0.0 (asume la máscara 255.255.255.0)
+network 192.168.1.0
+network 192.168.2.0 
+PERO también si queremos podemos especificar la máscara (aunque usa wildcards, osea la máscara está invertida, ej.: 255.255.255.0 es 0.0.0.255), y la ventaja que 
+tiene este protocolo es que no tiene el límite de 15 saltos, entonces se puede usar en redes mas grandes
+----------------PROTOCOLO DE ENRUTAMIENTO OSPF---------
+router ospf ASN_NUMBER
+network <num_red> <wild_card> area <num_area>
+
+
+--------------
+Para configurar la consola:
+line console 0 (en global config)
+Para configurar un logueo en la consola:
+1. password <password>
+2. login
+----------
+show version muestra la version del dispositivo cisco
+------------HISTORY COMMAND!!!!!-------
+sh hi (show history)en user mode
+-----------------shortcuts
+ctrl + U borra el comando q estamos escribiendo
+ctrol + shift + 6 BREAK THE PING!!!!!!!!!!
+
+---NOTA
+cuando se usa el comando copy start run no se reemplaza la configuración se mergea, es decir, se combina
+una mejor opcion cuando queremos hacer esto es:
+configure replace nvram:startup-config
+
+----FTP CONFIG FILES
+Para hacer un backup de los archivos de configuración del dispositivo:
+1. Configurar un servidor ftp con usuario y contraseña y permisos asignados
+2. En el dispositivo crear el mismo usuario con la misma contraseña:
+	En global-config: 
+		ip ftp username <username>
+		ip ftp password <password>
+3. En privilege mode:
+	3.1 copy run ftp:
+	3.2 introducir ip del servidor ftp
+	3.3 introducir nombre del archivo
+	3.4 <cr>
+Para restaurar un archivo de configuración:
+1. copy ftp: running-config
+************
+cuando copiamos de la nvram al servidor ftp estamos reemplazando
+cuando copiamos del servidor ftp a la nvram estamos mergeando
+-------------------------------
+Backup en la memoria flash del router:
+copy run flash:<nombrearchivo>.cfg
+--------------------------
+Para que tire los show completos para poder copiar y pegar todo el config de una:
+en privilege mode: terminal length 0
+-------------COMANDO PARA QUE NO ROMPA TRATANDO DE TRADUCIR DOMINIOS SIN TENER UN DNS---------------------
+en global config:
+	no ip domain lookup
+
+----PASANDO EN LIMPIO LOS COMANDOS DE SECURITY PAS Y TELNET
+en global config:
+enable password <password> para definir la contraseña al querer entrar en modo privilegiado
+service password-encryption para encriptar la contraseña y que no se guarde en texto plano
+
+o mejor aún:
+enable secret <password> para definir la conraseña al querer entrar en modo privilegiado,
+con la ventaja de que se guarda encriptada con hash md5. Sobreescribe el enable password
+
+Para configurar las primeras 5 lineas vty telnet:
+(config)#line vty 0 4
+(config-line)#login
+(config-line)#password <password>
+
+Y para acceder por telnet:
+telnet <ip_dir> y despues nos pide el password definido en las lineas vty
+después al entrar en modo privilegiado tambien nos solicita un password y es el que definimos con anterioridad (el secret password)
+
+Para definir una contraseña al acceder al modo usuario desde una consola:
+(config)#line console 0
+(config)#login
+(config)#password <password>
+
+-----------------------------
+1. Para ver el estado de las interfaces y sus direcciones:
+	show ip interface brief 
+2. Para ver todos los datos asociados a una interface:
+	show interfaces <interface>
+...............................
+Para configurar speed y dúplex de las interfaces:
+speed <speed>
+duplex <duplex>
+Para configurarlos manuales hay que configurar los dos dispositivos
+de forma manual. Y en ambos utilizar la misma configuración.
+Si uno está en manual y otro en auto:
+Se utiliza la velocidad más alta posible (que ambos soporten)
+Se utiliza el duplex dependiendo: 10 o 100 Mbps = half; 1000 Mbps o más = full
+-------------------
+¡¡¡¡¡¡¡¡DHCP!!!!!!!!!
+ip dhcp pool <nombre_pool>
+network A.B.C.D A.B.C.D
+default-router A.B.C.D
+ip dhcp excluded-address <desde_A.B.C.D> <hasta_A.B.C.D.>
+----------------------------------------
+
+PARA CONFIGURAR EL TRONCO CON EL ROUTER:
+1. definir las subinterfaces:
+Ej.: 
+	int g0/1.10
+	encap dot1q 10
+	ip add A.B.C.D. A.B.C.D.
+	int g0/1.20
+	encap dot1q 20
+	ip add A.B.C.D. A.B.C.D.
+	int g0/1.30
+	encap dot1q 30
+	ip add A.B.C.D. A.B.C.D.
+Para definir la native vlan en el router hay dos opciones:
+1. encap dot1q <num_vlan> native en la subinterface de la vlan nativa
+2. configurar la ip de la native vlan en la interfaz física
+
+Ejemplo de opción 2:
+R1#show run | s 0/1
+interface GigabitEthernet0/1
+ ip address 192.168.1.62 255.255.255.192
+ duplex auto
+ speed auto
+interface GigabitEthernet0/1.20
+ encapsulation dot1Q 20
+ ip address 192.168.1.126 255.255.255.192
+interface GigabitEthernet0/1.30
+ encapsulation dot1Q 30
+ ip address 192.168.1.190 255.255.255.192
+---------------------------
+SOBRE SWITCHS DE CAPA 3 LAYER 3 SWITCHES L3SWITCHS O MULTILAYER MULTI LAYER SWITCHS:
+-Para habilitar el routing de capa 3 hay que correr en global config: ip routing
+-Para configurar interfaces como si fuera un router, P2P por ejemplo: no switchport
+-Para definir las SVIs: int vlan <num_vlan> y después definimos el ip gateway
+----------------------------
+GATEWAY OF LAS RESORT:
+ip route 0.0.0.0 0.0.0.0 A.B.C.D.
+
+
+-----------------------------------------------------------------------------------------------------------
+Mini guía vlans
+En switchs:
+En global config:
+vlan <num_vlan>
+vlan name <nom_vlan>
+...
+Para asignar las interfaces a cada vlan:
+int r <interfaz><n1>/<n2_m1>-<n2_mx>
+sw m a
+sw a vlan <num_vlan>
+...
+Para configurar un tronco:
+En la interfaz:
+sw m tr
+sw tr all vl <vlan_n>,x,x,x...
+Para definir la vlan nativa:
+sw tr nat vl <vlan_n>
+--------------------------------
+Para ROAS, en switch:
+Entrar a la interfaz del enlace tronco con el switch y:
+encap dot1q <num_vlan> y dps definir el ip gw
+------------------------------
+Para intervlan con ML-SW:
+ip routing en gc si queremos establecer un enlace con un router y en esa int:
+no switchport y dps configurarla como una interfaz comun de ruteo
+Para routear entre vlans desde el l3sw:
+int vlan <num_vlan> y definir el ip 
+...
+Importante si queremos salir a otra LAN o WAN Por el router definir el gateway
+de last resort:
+0.0.0.0 0.0.0.0 A.B.C.D (de la int del router)
+-------------------------------
+Comandos para ir chequeando:
+show ip int br
+show int st
+show vl br
+sh r
+desc <descripcion> (esto se puede ver dps en el sh int st)
+
+-----------------------------------------------------------------------------------------------------------
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------
+DTP & VTP
+DTP:
+	(config-if)#switchport mode dynamic {auto | desirable}
+	*auto: acepta formar troncos
+	*desirable: intenta formar troncos
+	(config-if)#switchport nonegotiate 
+	*desactiva el protocolo de negociación en la interfaz, también sirve poner el puerto en static access
+	config#show int switchport
+	*para chequear el modo administrativo y operacional de los puertos
+VTP:	config# vtp dom <nombre_dominio>
+	*por defecto es NULL, y si el SW es cli o sv tienen su nom de dom en NULL asumen el del que sea distinto
+	las tramas que se usan en este protocolo se llaman VTP advertisements
+	config# vtp ver <ver>
+	*para setear la version de vtp, entre 1 y 2 no hay diferencia real, la 2 soporta token ring top que ni se usa
+	config#vtp mode {client | server | transparent}
+	*client: no puede modificar la vlan database, actualiza la vdb con los adv que le lleguen y tengan el mismo nom de dominio
+	*transparent: puede modificar su vdb pero no le da bola a los adv, aunque reenvía los q le llegan
+			  es decir, no envia SUS PROPIOS vtp adv
+	*server: puede modificar su vdb y envía sus propios vtp adv
+	*La vdb se actualiza según el numero de revisión más bajo, este número aumenta en una unidad cada vez que se realiza 
+	un cambio sobre la vdb.
+	A la hora de agregar un equipo a la red vtp debemos asegurarnos que este no tenga un número de revisión alto
+	para que no rompa la configuración, para asignarle un número de revisión de 0 podemos:
+	1. cambiar el nombre de dominio, o
+	2. poner el switch en modo transparente
+	
+
+
+-----------------------------------------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------------------------------------------
+STP (Spanning Tree Protocol)
+	CST (Common Spanning Tree)
+		PVST (Per Vlan Spanning Tree)
+		PVST+ (Per Vlan Spanning Tree asumming dot1q encapsulation in the trunk links)
+			#show spanning tree vlan vlanid
+			(config)#spanning-tree vlan vlanid root primary [chequea la prioridad del RB y se asigna una 25% inferior *4096]
+			(config)#spanning-tree vlan vlanid root secondary [asume que el BID del secRB es 32768 y se asigna una 
+													   prioridad de 28672, es decir 32768-4096]
+			(config-if)#spanning-tree vlan vlanid priority <bridge_priority(*4096*)> [PRIORIDAD DEL BRIDGE]
+			(config-if)#spanning-tree vlan vlanid port-priority <port_priority(*16*)> [PRIORIDAD DEL PUERTO]
+*nota: BID = PRIO then VLANID then MAC =
+32768 16384 8192  4096  | 2048  1024  512   256   128   64    32    16    8     4     2     1     
+15	  14	   13   12    11	  10	  9	  8	  7     6	  5	  4	  3     2	  1  	  0
+
+BID = 16 bits
+
+Criterios:
+	Root Bridge: Lowest Bridge ID:
+				1. Priority
+					1.1. Priority (4096-8192-12288-16384-20480-24576-28672-32768-36864-40960-45056-49152-53221-57344-61440) [primeros 4 bits]
+					1.2. SysID-Extension/VLANID [segundos 12 bits; de 0 a 4095, usables de 1 a 4094]
+				2. Mac-Address
+					2.1. 6 bytes, mientras más viejo el switch menor la MAC Address del mismo.
+	Root Port: 
+			1. Lowest Root Path Cost:
+				Eth  - 100 (Ethernet; 10Mb/s)
+				FaE  - 19  (FastEthernet; 100Mb/s)
+				GbE  - 4   (GigabitEthernet; 1Gb/s)
+				XGbE - 2   (10GigabitEthernet; 10Gb/s)
+			2. Lowest Bridge ID
+			3. Lowest Port ID = Port Priority(en múltiplos de 16) + Port Number [DEL OTRO EXTREMO]
+
+Si queremos usar MST (Minimum Spanning Tree, usado cuando tenemos muchas vlans y correr una instancia de STP por cada una agota el proc del switch)
+Definir instancias:
+	(config)#sp mst config
+	(config-mst)# instance <inst_num> vlan <vlan_id1>, <vlan_id2>, etc...
+Las vlans que no definamos en ninguna instancia forman parte de la instancia 0
+Y despues para definir el router primario y secundario se puede hacer con el comando sp mst <inst_num> root {primary | secondary} o con prioridades
+manuales, sp mst <inst_num> prio <prio>
+Y para activar el modo mst de stp: sp m m
+
+Classic STP/PVST/PVST+ vs Rapid PVST/rapid-pvst [states]
+
+Blocking  (20 sec)		Discarding
+Listening (15 sec)		Discarding
+Learning  (15 sec)		Learning
+Forwarding				Forwarding
+Disabled				Discarding
+
+TOTAL ≈ 50 secs			TOTAL ≈ 6 secs
+Esta diferencia en los tiempos se logra gracias a que los switches no esperan la ausencia de BPDU's, informan proactivamente los cambios en la topología
+Además:
+BTW Switches: P2P ports
+BTW SW&PC   : Edge ports
+BTW SW&HUB  : Shared ports
+
+La eduación proactiva se da en los siguientes pasos:
+1. Se recibe un BPDU que indica que cambió el root bridge, se asigna el nuevo root port y se bloquea el restante.
+2. Por el puerto bloqueado se envía una proposal al siguiente switch informando que cambió el RB
+3. El siguiente switch envía un agreement y cambia su root port bloqueando el anterior.
+4. El switch 1 recibe el agreement y designa el puerto bloqueado.
+5. El switch 2 envía la proposal al siguiente switch y así...
+
+Si usamos hubs, usar la opcion shared en el puerto:
+(config-if)#spanning-tree link-type {point-to-point | shared}
+
+
+Para evitar el tiempo de demora en los puertos a los que conectamos una máquina:
+(config-if)#spanning-tree portfast
+
+Portfast lo que hace es prometer que por ese puerto nunca se van a enviar BPDUS, es decir, son puertos donde se van a conectar endhosts, nunca otro switch, por ende
+podemos ASUMIR que todos los puertos que interconectan switches son troncos y por tanto en todos los demás puertos, que son de acceso, activar portfast, esto se hace con:
+(config)#spanning-tree portfast default
+De este modo se activa portfast en todos los puertos (Up) que estén en modo operacional de static access
+*Nota: Portfast solo tiene sentido en los switches que están en la capa de acceso del modelo jerárquico de diseño, en aquellos que tienen endhosts conectados.
+
+
+Linkfast
+Linkfast se usa para solucionar problemas de mac-tables mal populadas debido al hecho de que falló un enlace, para solucionar esto, el switch conectado al endhost envía
+una trama indicando origen del host y destino multicast de switches cisco, de esta forma todos los switches aprenden el nuevo path al endhost
+Se activa usando: sp linkfast. Se usa para fallas en links directos.
+ 
+
+Uplinkfast
+Cuando se cae el enlace del RootPort, si no está activado uplinkfast, demorará 50 segundos en escoger un nuevo puerto para que sea el rootport hasta que llegue al 
+estado FWD, con Uplinkfast se saltean los estados listening y learning, directamente se mueve el nuevo puerto escogido como RootPort a FWD state.
+
+Backbonefast
+Se usa en la mayoría de los switches y se activa globalmente, lo que hace es que cuando se cae un enlace indirect se asume la posición de root bridge y se informa esto,
+el switch que recibe este bpdu le pregunta al actual root bridge si lo sigue siendo y reenvia su respuesta al switch que reclama la posición. Sin backbone fast este
+proceso demora 50 segundos (20 en estado blocking, y 15 en listening y 15 en learning, hasta llegar a forwarding, con backbonefast se evitan los 20 en estado blocking
+es decir, ni bien llega el primer bpdu inferior (bridge id superior) se lo descarta y se pasa al estado learning
+Es decir, cuando un switch deja de recibir bpdus (debido a que falla un enlace), asume que es el RB, y envía su BID por sus puertos designados. Cuando lo recibe
+otro switch lo compara con el BID del RB actual, al ver que es menor, si esta backbonefast activado puede saltear el maxage, e inmediatamente pasar a listening, learning
+y forwarding para avisarle al switch1 que el RB sigue siendo el mismo y que solo debe cambias su puerto de ROOT.
+Para funcionar correctamente se debe activar en todos los switches de la red.
+Se activa usando: sp backbonefast 
+
+Algunas funciones que incrementan la estabilidad de STP:
+BPDUGuard: se utiliza en puertos que tienen PortFast activado, soluciona el problema cuando alguien maliciosa o inintencionalmente conecta un switch en un puerto 
+	     con FastPort activado, ni bien llega el primer BPDU del puerto con FastPort, el puerto se desactiva administrativamente.
+	     Se activa con (config-if)#spanning-tree bpduguard enable
+	     o
+	     (config)#spanning-tree portfast bpduguard default
+	     
+BPDUFilter: se utiliza en los enlaces que unen dos sistemas autónomos que no queremos que intercambien su stp config, es decir, bloquea los bpdus que lleguen a ese puerto
+		y los descarta. 
+		Se activa con (config)#spanning-tree portfast bpdufilter default
+RootGuard: se utiliza para evitar que un agente malicioso conecte un switch con una prioridad estúpidamente baja y obligue a la topología a enviar cantidades
+	     excesivas de tráfico, sniffeando todos los paquetes que le lleguen.
+	     Se activa en los puertos en los que no esperamos recibir jamás un BPDU superior (menor bridge id)
+	     Se activa con (config-if)#spanning-tree guard root
+LoopGuard: se usa para que si se rompe el enlace en una única dirección, pero se siguen recibiendo BPDUs en el puerto, no se asuma que el puerto se puede usar
+	     como un puerto alternativo en caso de que el RP se caiga, para esto el puerto se pone en modo loop inconsistent.
+	     Se activa con (config-if)#spanning-tree guard loop
+	     o
+	     (config)#spanning-tree loopguard default
+
+show sp root detail muestra el root bride de cada vlan
+show sp root priority muestra la prioridad del root bridge en cada vlan
+
+RAPID PVST+ VS CLASSIC PVST+
+En rapid todos los switches envían sus propios bpdus por los puertos designados, en pvst+ clasico solo el root bridge enviaba bpdus y los demás los reenviaban.
+En rapid los switches consideran muerto al bridge cuando se pierden 3 hello bpdus, en pvst+ clasico esperaban 10. Es decir 3*2=6segundos vs 10*2= 20 segundos
+Rapid usa flags para negociar en lugar de timers.
+
+
+
+-------------------------------------------------------------------------------------------------------------
+----OOC----
+Para ver el estado de los troncos en un switch
+#show int tr
+Para setear el modo de encapsulación manualmente en switchs que soportan ISL
+(config-if)#switchport trunk encapsulation dot1q
+
+Para definir el clcockrate del DCE en un enlace serial:
+clock rate 64000
+
+Otros shows utiles:
+show cdp neighbors, muestra los datos de los dispositivos conectados a los puertos
+show controllers, muestra el clockrate de la interfaz
+
+Debugs útiles:
+debug ip rip
+debug ip icmp
+debug all
+Y los mismos pero negados
+
+----------
+
+---------------------------------------------------------------------------------------------
+Ether channel
+Configurar varias interfaces físicas como si fueran una única interfaz lógica
+El cálculo de que interfaz física se utiliza en una comunicación se determina por flows,
+un flow es una comunicación entre dos nodos finales de una red.
+El cálculo se puede basar en diferentes tipos de inputs:
+	-Source MAC
+	-Dest   MAC
+	-Source & Dest MAC
+	-Source IP
+	-Dest   IP
+	-Source & Dest IP
+show command:
+	show etherchannel load-balance
+
+Switch(config)#port-channel load-balance ?
+  dst-ip       Dst IP Addr
+  dst-mac      Dst Mac Addr
+  src-dst-ip   Src XOR Dst IP Addr
+  src-dst-mac  Src XOR Dst Mac Addr
+  src-ip       Src IP Addr
+  src-mac      Src Mac Addr
+
+Métodos para configurar etherchannel:
+-PAgP es el equivalente a DTP pero para etherchannel, es decir, negocia dinamicamente la creación y mantenimiento
+de etherchannel. Es propietario de Cisco.
+-LACP es igual a PAgP pero no es propietario, es estándar (IEEE 802.3ad)
+-Estático, las interfaces se configuran manualmente.
+El máximo de interfaces que pueden formar un Etherchannel es 8 (16 en LACP, 8 activas y 8 en standby).
+
+Recomendado: configurar en int range, todas las interfaces que van a formar el etherchannel tienen que tener
+exactamente la misma config.
+
+Switch(config-if-range)#channel-group <grp_num> mode ?
+  auto       	PAgP equivalente a auto en DTP
+  desirable  	PAgP equivalente a desirable en DTP
+  passive    	LACP equivalenet a auto en DTP
+  active     	LACP equivalente a desirable en DTP
+  on         	ESTÁTICO
+
+Esto es:
+	PAgP				LACP				STATIC
+	-auto+auto = no ether	-pas+pas = no ether    	-on + on = ether
+	-auto+desi = ether	-pas+act = ether		-on +
+	-desi+desi = ether	-act+act = ether
+
+Switch(config-if-range)#channel-protocol ?
+  lacp  Prepare interface for LACP protocol
+  pagp  Prepare interface for PAgP protocol
+
+Aunque es medio al pedo pq si tiras auto/desi automáticamente se activa en PAgP, y si tiras
+pas/act se activa en LACP.
+
+Las interfaces en ethchan tienen que coincidir en:
+	duplex
+	speed
+	switchport mode
+	same allowed vlans & nat vlan (si son troncos)
+Si una configuración de estas no coincide se excluye la misma del canal ether
+
+showcom util: sh etherchannel {summary | port-channel}
+show etherchannel-port sirve para ver la prioridad y la mac
+lacp system priority algo así para poder bajar la prioridad y así poder realizar cambios en los puertos del canal
+---------------------------------------------------------------------------------------------
+Para configurar una ruta estática de respaldo a algún protocolo de enrutamiento dinámico en un router
+podemos utilizar el cuarto parámetro de ip route
+ip route <p1 = ip red a alanzar> <p2 = máscara> <p3 = ip nexthop> <p4 = distancia administrativa>
+Este tiene que ser más alto que la distancia administrativa del protocolo dinámico de enrutamiento configurado.
+De esta forma solo se va a activar cuando se caiga el enlace que formaba parte de la ruta dinámica.
+
+------------------------------------------------------------------------------------------------------
+RIP
+vesion 2 usa multicast y acepta CIDR y VLSM aunque sigue asumiendo classfull addresses
+ni auto summary desactiva la sumarización automática
+Los pasos que lleva a cabo el router cuando seteamos una net en el comando rip son los siguientes:
+1. router rip
+2. ver 2
+3. no aut
+4. network A.B.C.D.
+5. el router asume la dirección classfull
+6. chequea en su tabla de enrutamiento todas las direcciones que caigan en ese rango
+7. activa rip en esas interfaces y por las mismas envía las direcciones con su prefijo apropiado
+8. si en una interfaz no hay otro router, pero aun así queremos que esa dirección sea informada por
+las demás interfaces pero no le queremos enviar advertisements al pedo tenemos que usar el comando
+passive-interface <int> dentro de la conf del rip.
+EXTRA: para enviar advertisements sobre el gateway de last resort se usa default-information originate
+
+Por defecto el max path de router rip v2 es 4, esto es, guarda en la tabla hasta 4 rutas a la misma dirección
+Esto se puede cambiar con maximum-paths <num> pero no tiene mucho sentido 
+La AD (distancia administrativa) también se puede cambiar, por defecto es 120, pero con
+distance <distancia> se puede cambiar.
+
+EIGRP
+router eigrp <as>
+network A.B.C.D. wildcard
+EXTRA: eigrp router-id <A.B.C.D> para setear un router id manualmente, si no se setea el ip más alto en loopback, y si no el más
+alto en alguna otra interfaz del router.
+
+shows:
+show ip eigrp topology
+show ip eigrp interfaces
+show ip eigrp neighbours
+
+Para configurar el router id en eigrp:
+router-id A.B.C.D
+
+Cambiar el delay de una interfaz para interferir en la elección del successor:
+delay <delay> ; en int config
+
+Load balancing:
+variance <multiplier> ; desde el router eigrp as config
+
+Autenticación:
+crear keychain: (config)#key-chain <nombre>
+asignar keys:(config-keychain)#key <numero>
+		   (config-keychain-key)# key-string <contraseña>
+ ip authentication mode eigrp <as> md5
+ ip authentication key-chain eigrp <as> <key-chain>
+
+
+OSPF
+_El PID no es como el AS number de EIGRP, no es necesario que matchee
+_entre los routers para que se puedan establecer vecindades.
+_W.X.Y.Z = wildcard mask
+_El comando network funciona igual que en EIGRP
+_El comando passive-interface funciona igual que en EIGRP
+_El comando default-information originate funciona igual que en EIGRP
+(config)#router ospf <PID>
+(config-router)#network A.B.C.D W.X.Y.Z area <num_area>
+(config-router)#router-id A.B.C.D
+#clear ip ospf process
+(config-router)#maximum-paths <number_of_paths>
+(config-router)#distance <AD> ; por defecto 110
+
+
+
+---------------------------------------------------------------------------------------------
+Cisco Netflow
+se usa para monitorear el tráfico que pasa por un router, para un buen uso hay que activarlo en la interfaz pre nateo, es decir
+en la interfaz local.
+(config-if)#ip flow {ingress | egress} ; Para activar el colector, es decir, recolectar datos
+Pero con ese comando solo no hacemos nada, tenemos que activar algún colector específico:
+(config-if)#ip flow-{aggregation|export|cache|top-talkers|capture|egress}
+Para enviarlos a un sistema de monitoreo:
+ip flow-export destination A.B.C.D. <port_number> [definir el mismo numero de puerto por cada instancia de netflow, es decir p/c router]
+show ip flow export; muestra todo lo que sale, lo que se envía desde el router por el puerto definido
+show ip cache flow; muestra los datos en sí
+show ip flow top-talkers; muestra segun lo parametrizado los datos que llegaron y su tamaño
+---------------------------------------------------------------------------------------------
+
