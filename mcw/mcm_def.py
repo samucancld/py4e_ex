@@ -27,7 +27,6 @@ def mcw_counter(many,sinput,enc):
     mcw.sort(reverse=True)
     finalstr = ''
     for k,v in mcw[0:many]:
-        #print(f'La palabra "{v}" aparece "{k}" veces')
         finalstr = finalstr + f'La palabra "{v}" aparece "{k}" veces\n'
     finalstr = finalstr.rstrip()
     return finalstr
