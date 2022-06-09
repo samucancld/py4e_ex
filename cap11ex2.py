@@ -10,7 +10,6 @@
 #39756
 
 import re
-print('name without extension = utf-8\nname with extension = def')
 while True:
     fname = input('fname> ')
     try:
@@ -18,7 +17,7 @@ while True:
         if fname[-4:] == '.txt':
             handler = open(fname)
         else:
-            handler = open(fname+'.txt',encoding='utf-8')
+            handler = open(fname+'.txt')
         break
     except:
         print("file doesn't found")
