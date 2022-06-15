@@ -1,0 +1,10 @@
+La palabra "que" aparece "10351" veces
+La palabra "de" aparece "8947" veces
+La palabra "y" aparece "8042" veces
+La palabra "la" aparece "4941" veces
+La palabra "a" aparece "4725" veces
+La palabra "en" aparece "3883" veces
+La palabra "el" aparece "3726" veces
+La palabra "no" aparece "2786" veces
+La palabra "se" aparece "2382" veces
+La palabra "los" aparece "2122" veces
