@@ -19,7 +19,8 @@ for line in fhand:
         f_num = float(s_num)
         tot = tot + f_num
         c = c + 1
-print(tot,c,tot/c)
+# print(tot,c,tot/c)
+print('Average spam confidence:',tot/c)
 
 
 
