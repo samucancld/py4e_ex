@@ -8,3 +8,8 @@ La palabra "el" aparece "3726" veces
 La palabra "no" aparece "2786" veces
 La palabra "se" aparece "2382" veces
 La palabra "los" aparece "2122" veces
+La palabra "con" aparece "2024" veces
+La palabra "por" aparece "1881" veces
+La palabra "su" aparece "1856" veces
+La palabra "le" aparece "1801" veces
+La palabra "lo" aparece "1778" veces

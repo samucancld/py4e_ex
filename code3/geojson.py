@@ -8,6 +8,7 @@ api_key = False
 # https://developers.google.com/maps/documentation/geocoding/intro
 
 if api_key is False:
+    #si no tenes una api_key de google usas la copia de la api que aloja dr chuck, con una api key de valor 42
     api_key = 42
     serviceurl = 'http://py4e-data.dr-chuck.net/json?'
 else :
@@ -25,15 +26,23 @@ while True:
     parms = dict()
     parms['address'] = address
     if api_key is not False: parms['key'] = api_key
+    #parms es un diccionario con key address y value la direccion inputeada y con key key y value 42 o la api key que tengamos
+    print('Debug parms:',parms)
+    print('Debug parms parseado:',urllib.parse.urlencode(parms))
+    print('Debug serviceurl:',serviceurl)
     url = serviceurl + urllib.parse.urlencode(parms)
-
-    print('Retrieving', url)
+    print('Debug url(serviceurl+parsedparms)', url)
+    #handling the request
     uh = urllib.request.urlopen(url, context=ctx)
+    #decoding utf-8 into a unicode string
     data = uh.read().decode()
     print('Retrieved', len(data), 'characters')
+    print('Debug data',data)
 
     try:
+        # parsing json data into a dictionary with two keys, one called status with a value of OK and one called results with a list of dictionaries 
         js = json.loads(data)
+        print('Debug js(parsed data):',js)
     except:
         js = None
 
@@ -42,10 +51,19 @@ while True:
         print(data)
         continue
 
-    print(json.dumps(js, indent=4))
-
+    #print(json.dumps(js, indent=4))
+    #print('Debug pos 0:',js['results'][0])
+    # pos 0 is used because is one single result, meaning the google api just response with ONE result
     lat = js['results'][0]['geometry']['location']['lat']
     lng = js['results'][0]['geometry']['location']['lng']
+    depto = js['results'][0]['address_components'][1]['short_name']
+    splited_depto = depto.split()
+    print('Debug splitted depto:',splited_depto)
+    splited_depto.pop()
+    print('Debug splited_depto with pop',splited_depto)
+    joined_depto = ' '.join(splited_depto)
+    print('Debug joined_depto:',joined_depto)
+    print('Depto: ', joined_depto)
     print('lat', lat, 'lng', lng)
     location = js['results'][0]['formatted_address']
     print(location)
