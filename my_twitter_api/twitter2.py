@@ -1,5 +1,5 @@
 import urllib.request, urllib.parse, urllib.error
-import my_twitter_api.twurl as twurl
+import twurl
 import json
 import ssl
 

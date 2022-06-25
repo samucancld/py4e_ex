@@ -1,6 +1,6 @@
 import urllib.request, urllib.parse, urllib.error
 import oauth
-import my_twitter_api.hidden as hidden
+import hidden
 
 # https://apps.twitter.com/
 # Create App and get the four strings, put them in hidden.py

@@ -1,6 +1,6 @@
 from urllib.request import urlopen
 import urllib.error
-import twurl
+import my_twitter_api.twurl as twurl
 import json
 import sqlite3
 import ssl
