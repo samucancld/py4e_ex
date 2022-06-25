@@ -4,7 +4,7 @@ from bearer_authenticator import bearer_oauth
 from connection_establisher import connect_to_endpoint
 
 import os, unidecode
-'''samuca'''
+'''samucaa'''
 def main():
     url = create_url()
     json_response = connect_to_endpoint(url)
