@@ -4,3 +4,6 @@ my_md_get_users_generator/__pycache__
 tw_api_documentation/
 *.pyc 
 cap14/scripts/pgcredentials.json
+cap14/exs/pgcredentials.json
+cap14/my_pgdb_tw_get_users/hidden.py
+cap14/my_pgdb_tw_get_users/pgcredentials.json
