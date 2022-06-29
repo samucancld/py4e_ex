@@ -3,8 +3,8 @@
     "version": "2.2.11",
     "width": 2000,
     "height": 2000,
-    "scrollTop": -59,
-    "scrollLeft": -63,
+    "scrollTop": -47,
+    "scrollLeft": 0,
     "zoomLevel": 0.9,
     "show": {
       "tableComment": false,
@@ -189,7 +189,7 @@
           "active": false,
           "left": 13.75,
           "top": 9.5,
-          "zIndex": 57,
+          "zIndex": 1,
           "widthName": 60,
           "widthComment": 60
         },
@@ -251,7 +251,7 @@
           "active": false,
           "left": 12.0278,
           "top": 411.3045,
-          "zIndex": 63,
+          "zIndex": 2,
           "widthName": 60,
           "widthComment": 60
         },
@@ -290,7 +290,7 @@
           "active": false,
           "left": 275.361,
           "top": 253.2496,
-          "zIndex": 64,
+          "zIndex": 3,
           "widthName": 60,
           "widthComment": 60
         },
